@@ -59,11 +59,11 @@ there are two themes named `red` and `blue` and that there are locale aware vers
 
     import griffon.plugins.theme.ThemeManagerHolder
     class SampleController {
-        void red()  { ThemeManagerHolder.themeManager.currentTheme = 'red' }
-        void blue() { ThemeManagerHolder.themeManager.currentTheme = 'blue' }
+        void red(evt)  { ThemeManagerHolder.themeManager.currentTheme = 'red' }
+        void blue(evt) { ThemeManagerHolder.themeManager.currentTheme = 'blue' }
 
-        void spanish() { app.localeAsString = 'es' }
-        void english() { app.localeAsString = 'en' }
+        void spanish(evt) { app.localeAsString = 'es' }
+        void english(evt) { app.localeAsString = 'en' }
     }
 
 Classes that should participate in theme injection must be anotated with `@ThemeAware` and hav their properties anotated with
@@ -114,7 +114,7 @@ a View may use the `color` and `message` model properties in this way
               foreground: bind { model.color },
               constraints: CENTER)
         panel(constraints: WEST) {
-            gridLayout()
+            gridLayout(cols: 1, rows: 4)
             button(redAction)
             button(blueAction)
             button(spanishAction)

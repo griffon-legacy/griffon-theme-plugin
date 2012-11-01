@@ -35,11 +35,9 @@ import org.slf4j.LoggerFactory;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static griffon.util.ConfigUtils.getConfigValue;
 
@@ -49,7 +47,7 @@ import static griffon.util.ConfigUtils.getConfigValue;
 public class ThemeAwareResourcesInjector extends AbstractResourcesInjector {
     private static final Logger LOG = LoggerFactory.getLogger(ThemeAwareResourcesInjector.class);
     private final Map<String, ResourceResolver> themeResolvers = new LinkedHashMap<String, ResourceResolver>();
-    private final List<Object> themeAwareInstances = new ArrayList<Object>();
+    private final InstanceStore instanceStore = new InstanceStore();
     private final ResourcesInjector defaultResourcesInjector;
 
     public ThemeAwareResourcesInjector(GriffonApplication app) {
@@ -72,7 +70,7 @@ public class ThemeAwareResourcesInjector extends AbstractResourcesInjector {
         themeManager.addPropertyChangeListener(ThemeManager.CURRENT_THEME_PROP, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent event) {
                 LOG.info("Theme changed to " + event.getNewValue());
-                for (Object instance : themeAwareInstances) {
+                for (Object instance : instanceStore) {
                     injectResources(instance);
                 }
             }
@@ -82,15 +80,15 @@ public class ThemeAwareResourcesInjector extends AbstractResourcesInjector {
             @Override
             public void run(Object[] args) {
                 Object instance = args[2];
-                if (themeAwareInstances.contains(instance)) {
-                    themeAwareInstances.remove(instance);
+                if (instanceStore.contains(instance)) {
+                    instanceStore.remove(instance);
                 }
             }
         });
 
         app.addPropertyChangeListener("locale", new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
-                for (Object instance : themeAwareInstances) {
+                for (Object instance : instanceStore) {
                     injectResources(instance);
                 }
             }
@@ -99,12 +97,13 @@ public class ThemeAwareResourcesInjector extends AbstractResourcesInjector {
 
     @Override
     public void injectResources(Object instance) {
+        if (null == instance) return;
         if (instance.getClass().getAnnotation(ThemeAware.class) == null) {
             defaultResourcesInjector.injectResources(instance);
         } else {
             super.injectResources(instance);
-            if (!themeAwareInstances.contains(instance)) {
-                themeAwareInstances.add(instance);
+            if (!instanceStore.contains(instance)) {
+                instanceStore.add(instance);
             }
         }
     }
@@ -135,6 +134,54 @@ public class ThemeAwareResourcesInjector extends AbstractResourcesInjector {
             InvokerHelper.invokeMethod(instance, setter, value);
         } catch (MissingMethodException mme) {
             super.setFieldValue(instance, field, value, fqFieldName);
+        }
+    }
+
+    private static class InstanceStore implements Iterable {
+        private final List<WeakReference<Object>> instances = new LinkedList<WeakReference<Object>>();
+
+        private void add(Object instance) {
+            if (null == instance) return;
+            instances.add(new WeakReference<Object>(instance));
+        }
+
+        private void remove(Object instance) {
+            if (null == instance) return;
+            for (Iterator<WeakReference<Object>> it = instances.iterator(); it.hasNext(); ) {
+                Object candidate = it.next().get();
+                if (instance.equals(candidate)) {
+                    it.remove();
+                    break;
+                }
+            }
+        }
+
+        private boolean contains(Object instance) {
+            if (null == instance) return false;
+            for (Iterator<WeakReference<Object>> it = instances.iterator(); it.hasNext(); ) {
+                Object candidate = it.next().get();
+                if (instance.equals(candidate)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public Iterator<Object> iterator() {
+            final Iterator<WeakReference<Object>> it = instances.iterator();
+            return new Iterator<Object>() {
+                public boolean hasNext() {
+                    return it.hasNext();
+                }
+
+                public Object next() {
+                    return it.next().get();
+                }
+
+                public void remove() {
+                    it.remove();
+                }
+            };
         }
     }
 }
