@@ -45,6 +45,72 @@ class ThemeGriffonPlugin {
     ]
     String title = 'Theme injection'
     String description = '''
-TBD
+Enables injection of theme-based resources.
+
+Usage
+-----
+Themes bay be switched at any time based on two conditions:
+
+ * a valid value for `ThemeManager.currentTheme` is set
+ * the application's Locale is updated
+
+The following controller shows 4 actions showing how to trigger each one of these conditions. The application assumes
+there are two themes named `red` and `blue` and that there are locale aware versions of these themes for English and Spanish
+
+    import griffon.plugins.theme.ThemeManagerHolder
+    class SampleController {
+        void red()  { ThemeManagerHolder.themeManager.currentTheme = 'red' }
+        void blue() { ThemeManagerHolder.themeManager.currentTheme = 'blue' }
+
+        void spanish() { app.localeAsString = 'es' }
+        void english() { app.localeAsString = 'en' }
+    }
+
+Classes that should participate in theme injection must be annoated with `@ThemeAware` and hav their properties annotated with
+`@InjectedResource`, for example
+
+    import groovy.beans.Bindable
+    import java.awt.Color
+    import griffon.core.resources.InjectedResource
+
+    @griffon.plugins.theme.ThemeAware
+    class SampleModel {
+        @Bindable @InjectedResource Color color
+        @Bindable @InjectedResource String message
+    }
+
+Marking bean properties as bindable makes it easier for the application to update itself when a theme change occurs. For example,
+a View may use the `color` and `message` model properties in this way
+
+    application(title: 'Themes',
+      preferredSize: [320, 240], pack: true,
+      locationByPlatform: true) {
+        borderLayout()
+        label(text: bind { model.message },
+              foreground: bind { model.color },
+              constraints: CENTER)
+        panel(constraints: WEST) {
+            gridLayout()
+            button(redAction)
+            button(blueAction)
+            button(spanishAction)
+            button(englishAction)
+        }
+    }
+
+It's worth noting that if a resource cannot be resolved by a theme then the default application resources will be searched until the
+resource can be resolved or a `NoSuchResourceException` is thrown.
+
+Configuration
+-------------
+Theme files look exactly the same as resources files, as explained in the [Resource management][1] chapter of the Griffon Guide.
+For the example above the application expects the following files to exist
+
+ * griffon-app/i18n/red.properties
+ * griffon-app/i18n/red_es.properties
+ * griffon-app/i18n/blue.properties
+ * griffon-app/i18n/blue_es.properties
+
+[1]: http://griffon.codehaus.org/guide/latest/guide/resourceManagement.html
 '''
 }
