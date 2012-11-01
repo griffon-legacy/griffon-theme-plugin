@@ -66,7 +66,7 @@ there are two themes named `red` and `blue` and that there are locale aware vers
         void english() { app.localeAsString = 'en' }
     }
 
-Classes that should participate in theme injection must be annoated with `@ThemeAware` and hav their properties annotated with
+Classes that should participate in theme injection must be anotated with `@ThemeAware` and hav their properties anotated with
 `@InjectedResource`, for example
 
     import groovy.beans.Bindable
@@ -77,6 +77,30 @@ Classes that should participate in theme injection must be annoated with `@Theme
     class SampleModel {
         @Bindable @InjectedResource Color color
         @Bindable @InjectedResource String message
+    }
+
+The resource injection mechanism relies on application events in order to handle injections on instances. All griffon artifacts
+trigger an event upon creation (`NewInstance`) and destruction (`DestroyInstance`). Non griffon artifact instances can still
+participate in resource injection as long as these events are triggered by your code, for example
+
+    @griffon.plugins.theme.ThemeAware
+    class Greeter {
+        @Bindable @InjectedResource String message
+        String greet() { message }
+    }
+
+    class MyService {
+        private Greeter greeter
+        void serviceInit() {
+            greeter = new Greeter()
+            app.event('NewInstance', [Greeter, '', greeter])
+        }
+        void serviceDestroy() {
+            app.event('DestroyInstance', [Greeter, '', greeter])
+        }
+        String sayHello() {
+            greeter.greet()
+        }
     }
 
 Marking bean properties as bindable makes it easier for the application to update itself when a theme change occurs. For example,
