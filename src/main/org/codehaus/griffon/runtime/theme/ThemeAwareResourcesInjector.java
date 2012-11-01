@@ -86,6 +86,14 @@ public class ThemeAwareResourcesInjector extends AbstractResourcesInjector {
                 }
             }
         });
+
+        app.addPropertyChangeListener("locale", new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
+                for (Object instance : themeAwareInstances) {
+                    injectResources(instance);
+                }
+            }
+        });
     }
 
     @Override
