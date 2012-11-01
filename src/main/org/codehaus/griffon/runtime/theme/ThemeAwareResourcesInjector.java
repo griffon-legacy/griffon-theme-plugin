@@ -17,6 +17,7 @@
 package org.codehaus.griffon.runtime.theme;
 
 import griffon.core.GriffonApplication;
+import griffon.core.resources.NoSuchResourceException;
 import griffon.core.resources.ResourceResolver;
 import griffon.core.resources.ResourcesInjector;
 import griffon.plugins.theme.ThemeAware;
@@ -110,7 +111,11 @@ public class ThemeAwareResourcesInjector extends AbstractResourcesInjector {
 
     @Override
     protected Object resolveResource(String key, String[] args) {
-        return fetchResourceResolver().resolveResource(key, args, getApp().getLocale());
+        try {
+            return fetchResourceResolver().resolveResource(key, args, getApp().getLocale());
+        } catch (NoSuchResourceException nsre) {
+            return getApp().resolveResource(key, args, getApp().getLocale());
+        }
     }
 
     @Override
