@@ -83,6 +83,8 @@ The resource injection mechanism relies on application events in order to handle
 trigger an event upon creation (`NewInstance`) and destruction (`DestroyInstance`). Non griffon artifact instances can still
 participate in resource injection as long as these events are triggered by your code, for example
 
+    import groovy.beans.Bindable
+    import griffon.core.resources.InjectedResource
     @griffon.plugins.theme.ThemeAware
     class Greeter {
         @Bindable @InjectedResource String message

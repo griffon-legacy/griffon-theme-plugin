@@ -147,13 +147,15 @@ public class ThemeAwareResourcesInjector extends AbstractResourcesInjector {
 
         private void remove(Object instance) {
             if (null == instance) return;
+            WeakReference<Object> subject = null;
             for (Iterator<WeakReference<Object>> it = instances.iterator(); it.hasNext(); ) {
-                Object candidate = it.next().get();
+                subject = it.next();
+                Object candidate = subject.get();
                 if (instance.equals(candidate)) {
-                    it.remove();
                     break;
                 }
             }
+            if (subject != null) instances.remove(subject);
         }
 
         private boolean contains(Object instance) {
