@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,8 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.util.*;
 
+import java.beans.PropertyVetoException;
+
 import static griffon.util.ConfigUtils.getConfigValue;
 
 /**
@@ -66,7 +68,11 @@ public class ThemeAwareResourcesInjector extends AbstractResourcesInjector {
 
         final ThemeManager themeManager = new ThemeManager(app, themeResolvers.keySet());
         ThemeManagerHolder.setThemeManager(themeManager);
-        themeManager.setCurrentTheme(basenames.get(0));
+        try {
+            themeManager.setCurrentTheme(basenames.get(0));
+        } catch(PropertyVetoException pve) {
+            // ignore
+        }
         themeManager.addPropertyChangeListener(ThemeManager.CURRENT_THEME_PROP, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent event) {
                 LOG.info("Theme changed to " + event.getNewValue());

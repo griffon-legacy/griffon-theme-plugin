@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,19 @@ package griffon.plugins.theme;
 
 import griffon.core.ApplicationHandler;
 import griffon.core.GriffonApplication;
-import org.codehaus.griffon.runtime.core.AbstractObservable;
+import org.codehaus.griffon.runtime.core.AbstractVetoable;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import java.beans.PropertyVetoException;
+
 /**
  * @author Andres Almiray
  */
-public class ThemeManager extends AbstractObservable implements ApplicationHandler {
+public class ThemeManager extends AbstractVetoable implements ApplicationHandler {
     public static final String CURRENT_THEME_PROP = "currentTheme";
     private final GriffonApplication app;
     private final List<String> themes = new ArrayList<String>();
@@ -51,8 +53,9 @@ public class ThemeManager extends AbstractObservable implements ApplicationHandl
         return currentTheme;
     }
 
-    public void setCurrentTheme(String currentTheme) {
+    public void setCurrentTheme(String currentTheme) throws PropertyVetoException {
         if (themes.contains(currentTheme)) {
+            fireVetoableChange(CURRENT_THEME_PROP, this.currentTheme, currentTheme);
             firePropertyChange(CURRENT_THEME_PROP, this.currentTheme, this.currentTheme = currentTheme);
         }
     }
