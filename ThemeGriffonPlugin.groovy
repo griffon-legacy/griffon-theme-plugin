@@ -16,9 +16,9 @@
 
 class ThemeGriffonPlugin {
     // the plugin version
-    String version = '0.1'
+    String version = '0.2.0'
     // the version or versions of Griffon the plugin is designed for
-    String griffonVersion = '1.2.0-SNAPSHOT > *'
+    String griffonVersion = '1.3.0 > *'
     // the other plugins this plugin depends on
     Map dependsOn = [:]
     // resources that are included in plugin packaging
@@ -49,7 +49,7 @@ Enables injection of theme-based resources.
 
 Usage
 -----
-Themes bay be switched at any time based on two conditions:
+Themes may be switched at any time based on two conditions:
 
  * a valid value for `ThemeManager.currentTheme` is set
  * the application's Locale is updated

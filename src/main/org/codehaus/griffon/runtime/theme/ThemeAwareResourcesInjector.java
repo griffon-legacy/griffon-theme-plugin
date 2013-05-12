@@ -25,11 +25,9 @@ import griffon.plugins.theme.ThemeManager;
 import griffon.plugins.theme.ThemeManagerHolder;
 import griffon.util.GriffonNameUtils;
 import griffon.util.RunnableWithArgs;
-import groovy.lang.MissingMethodException;
 import org.codehaus.griffon.runtime.core.resources.AbstractResourcesInjector;
 import org.codehaus.griffon.runtime.core.resources.DefaultResourceResolver;
 import org.codehaus.griffon.runtime.core.resources.DefaultResourcesInjector;
-import org.codehaus.groovy.runtime.InvokerHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -131,16 +129,6 @@ public class ThemeAwareResourcesInjector extends AbstractResourcesInjector {
     private ResourceResolver fetchResourceResolver() {
         String currentTheme = ThemeManagerHolder.getThemeManager().getCurrentTheme();
         return themeResolvers.get(currentTheme);
-    }
-
-    @Override
-    protected void setFieldValue(Object instance, Field field, Object value, String fqFieldName) {
-        String setter = GriffonNameUtils.getSetterName(field.getName());
-        try {
-            InvokerHelper.invokeMethod(instance, setter, value);
-        } catch (MissingMethodException mme) {
-            super.setFieldValue(instance, field, value, fqFieldName);
-        }
     }
 
     private static class InstanceStore implements Iterable {
